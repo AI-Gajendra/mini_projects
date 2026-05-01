@@ -11,6 +11,7 @@ A collection of single-file Python utilities built to solve day-to-day problems 
 | # | File | Description |
 |---|------|-------------|
 | 1 | [music_player.py](#1-music_playerpy) | Terminal-based YouTube music player (TUI) |
+| 2 | [gemini_clip_extractor.py](#2-gemini_clip_extractorpy) | AI-powered viral clip detector for YouTube videos using Gemini |
 
 ---
 
@@ -88,6 +89,92 @@ python music_player.py https://www.youtube.com/playlist?list=XXXXXXXXXXX
 │     ...                                                         │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## 2. `gemini_clip_extractor.py`
+
+Sends a YouTube video to Gemini's multimodal API and gets back a full clip analysis — timestamped transcript, visual descriptions, viral highlight detection, kinetic subtitle specs, and clip editing notes. Output is saved as a JSON file for use in video editing pipelines.
+
+### Requirements
+
+| Dependency | Install |
+|------------|----------|
+| Python 3.8+ | — |
+| `google-genai` | `pip install google-genai` |
+| Gemini API key | [Get one free](https://aistudio.google.com/app/apikey) |
+
+```bash
+pip install google-genai
+```
+
+### Setup
+
+Export your Gemini API key as an environment variable:
+
+```bash
+# Windows (PowerShell)
+$env:GEMINI_API_KEY = "your_api_key_here"
+
+# Windows (Command Prompt)
+set GEMINI_API_KEY=your_api_key_here
+
+# macOS / Linux
+export GEMINI_API_KEY=your_api_key_here
+```
+
+### Usage
+
+```bash
+python gemini_clip_extractor.py
+```
+
+You will be prompted to paste a YouTube URL. The script will:
+
+1. Send the video to Gemini with a multimodal analysis prompt
+2. Receive a structured JSON response containing:
+   - Full timestamped transcript (every 2–5 seconds)
+   - Visual analysis aligned to transcript timestamps
+   - 5–10 detected viral highlight moments with scores
+   - Full clip specs with kinetic subtitle segments
+   - 2 rejected clips with reasoning
+3. Save the result to a file named `video_<hash>.json` in the current directory
+
+### Output Structure
+
+```json
+{
+  "content_type": "PODCAST",
+  "video_energy_level": "high",
+  "transcript": [...],
+  "visual_analysis": [...],
+  "highlights": [
+    {
+      "start_time": 42,
+      "end_time": 87,
+      "title": "He said this on camera and immediately regretted it",
+      "hook_strength": 91,
+      "payoff_strength": 88,
+      "rewatchability": 76,
+      "emotion_type": "shock"
+    }
+  ],
+  "clip_recommendations": [...],
+  "rejected_clips": [...]
+}
+```
+
+### Clip Recommendation Fields
+
+| Field | Description |
+|-------|-------------|
+| `clip_id` | Unique snake_case identifier |
+| `clip_start` / `clip_end` | Timestamps in seconds |
+| `hook_text` | Primary (ALL CAPS) and secondary hook lines |
+| `kinetic_subtitle_segments` | Per-second subtitle cues with animation type |
+| `platform_suitability` | e.g. `["TikTok", "YouTube Shorts", "Reels"]` |
+| `editing_notes` | Cut, zoom, pace, and audio instructions |
+| `loop_note` | How the ending reconnects to the opening hook |
 
 ---
 
