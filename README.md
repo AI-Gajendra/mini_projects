@@ -12,6 +12,7 @@ A collection of single-file Python utilities built to solve day-to-day problems 
 |---|------|-------------|
 | 1 | [music_player.py](#1-music_playerpy) | Terminal-based YouTube music player (TUI) |
 | 2 | [gemini_clip_extractor.py](#2-gemini_clip_extractorpy) | AI-powered viral clip detector for YouTube videos using Gemini |
+| 3 | [manga_downloader_single.py](#3-manga_downloader_singlepy) | All-in-one manga downloader — NatoManga & AsuraScan, interactive or CSV batch mode |
 
 ---
 
@@ -175,6 +176,100 @@ You will be prompted to paste a YouTube URL. The script will:
 | `platform_suitability` | e.g. `["TikTok", "YouTube Shorts", "Reels"]` |
 | `editing_notes` | Cut, zoom, pace, and audio instructions |
 | `loop_note` | How the ending reconnects to the opening hook |
+
+---
+
+---
+
+## 3. `manga_downloader_single.py`
+
+An async manga downloader that supports two sources — **NatoManga** (with optional Playwright/CDP Cloudflare bypass) and **AsuraScan** (direct HTTP + astro-island JSON parsing). Run it interactively to search, pick chapters, and download, or point it at a CSV for unattended batch downloads.
+
+### Requirements
+
+| Dependency | Install |
+|------------|----------|
+| Python 3.8+ | — |
+| `aiohttp` | `pip install aiohttp` |
+| `aiofiles` | `pip install aiofiles` |
+| `beautifulsoup4` | `pip install beautifulsoup4` |
+| `rich` | `pip install rich` |
+| `requests` | `pip install requests` |
+| `playwright` *(optional)* | `pip install playwright && python -m playwright install chromium` |
+
+Install all at once:
+
+```bash
+pip install aiohttp aiofiles beautifulsoup4 rich requests
+# Optional — only needed for browser/CDP mode (NatoManga Cloudflare bypass):
+pip install playwright && python -m playwright install chromium
+```
+
+### Usage
+
+**Interactive mode** (search → select chapters → download):
+
+```bash
+python manga_downloader_single.py --interactive
+python manga_downloader_single.py --interactive --source asura
+```
+
+**CSV batch mode** (unattended, reads `manga_links.csv`):
+
+```bash
+python manga_downloader_single.py manga_links.csv
+```
+
+**Browser / CDP mode** (NatoManga Cloudflare bypass):
+
+```bash
+# Launch a local Playwright browser
+python manga_downloader_single.py --interactive --browser-mode
+
+# Attach to an already-running Chrome via CDP
+python manga_downloader_single.py --interactive --browser-cdp-url http://127.0.0.1:9222
+```
+
+### CLI Flags
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `csv_path` | *(positional)* | CSV file with `Manga Name` and `Manga Link` columns |
+| `--interactive` | off | Interactive search-and-download mode |
+| `--source` | `natomanga` | Source site: `natomanga` or `asura` |
+| `--start-chapter` | — | Chapter number to start from |
+| `--max-chapters` | — | Maximum chapter number to download |
+| `--workers` | `3` | Concurrent download workers |
+| `--retry-failed` | off | Retry previously failed downloads |
+| `--backup-interval` | `5` | Save progress backup every N chapters |
+| `--proxy-list` | — | Path to a text file of proxy URLs |
+| `--header` | — | Extra HTTP header (`Key: Value`), repeatable |
+| `--cookie` | — | Extra cookie (`name=value`), repeatable |
+| `--preflight` | off | Check connectivity before downloading |
+| `--preflight-only` | off | Run preflight checks and exit |
+| `--browser-mode` | off | Use Playwright browser for scraping (NatoManga) |
+| `--browser-headless` | off | Run Playwright in headless mode |
+| `--browser-timeout` | `30` | Playwright navigation timeout in seconds |
+| `--browser-wait-for-challenge` | off | Pause so you can solve a Cloudflare challenge manually |
+| `--browser-profile-dir` | `.playwright-profile` | Persistent Playwright profile directory |
+| `--browser-cdp-url` | — | Attach to an existing Chrome via CDP URL |
+
+### CSV Format
+
+```csv
+Manga Name,Manga Link
+One Piece,https://www.natomanga.com/manga/one-piece/
+Solo Leveling,https://asurascans.com/comics/solo-leveling/
+```
+
+### Chapter Selection (Interactive Mode)
+
+| Input | Meaning |
+|-------|---------|
+| `all` | Every chapter |
+| `1,4,7` | Chapters 1, 4, and 7 |
+| `10-20` | Chapters 10 through 20 |
+| `idx:1-5` | List positions 1–5 (index mode) |
 
 ---
 
